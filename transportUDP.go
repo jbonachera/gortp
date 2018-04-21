@@ -29,6 +29,7 @@ import (
 
 // RtpTransportUDP implements the interfaces RtpTransportRecv and RtpTransportWrite for RTP transports.
 type TransportUDP struct {
+	listening bool
 	TransportCommon
 	callUpper                   TransportRecv
 	toLower                     TransportWrite
@@ -43,28 +44,44 @@ type TransportUDP struct {
 // port - The port number of the RTP data port. This must be an even port number.
 //        The following odd port number is the control (RTCP) port.
 //
-func NewTransportUDP(addr *net.IPAddr, port int) (*TransportUDP, error) {
+func NewTransportUDP(addr *net.IPAddr) (*TransportUDP, error) {
 	tp := new(TransportUDP)
 	tp.callUpper = tp
-	tp.localAddrRtp = &net.UDPAddr{addr.IP, port, ""}
-	tp.localAddrRtcp = &net.UDPAddr{addr.IP, port + 1, ""}
+	tp.localAddrRtp = &net.UDPAddr{addr.IP, 0, ""}
+	tp.localAddrRtcp = &net.UDPAddr{addr.IP, 0, ""}
 	return tp, nil
+}
+
+func (tp *TransportUDP) RTPPort() int {
+	return tp.dataConn.LocalAddr().(*net.UDPAddr).Port
+}
+func (tp *TransportUDP) RTCPPort() int {
+	return tp.dataConn.LocalAddr().(*net.UDPAddr).Port + 1
 }
 
 // ListenOnTransports listens for incoming RTP and RTCP packets addressed
 // to this transport.
 //
 func (tp *TransportUDP) ListenOnTransports() (err error) {
+	if tp.listening {
+		return nil
+	}
+
 	tp.dataConn, err = net.ListenUDP(tp.localAddrRtp.Network(), tp.localAddrRtp)
 	if err != nil {
 		return
 	}
-
+	port := tp.dataConn.LocalAddr().(*net.UDPAddr).Port
+	if port%2 != 0 {
+		tp.dataConn.Close()
+		// Ugly hack to listen on an even port..
+		return tp.ListenOnTransports()
+	}
 	p := ipv4.NewConn(tp.dataConn)
 	if err = p.SetTOS(iana.DiffServAF41); err != nil {
 		fmt.Printf("TransportUDP: failed to set TOS marking on dataConn\n")
 	}
-
+	tp.localAddrRtcp.Port = port + 1
 	tp.ctrlConn, err = net.ListenUDP(tp.localAddrRtcp.Network(), tp.localAddrRtcp)
 	if err != nil {
 		tp.dataConn.Close()
@@ -73,6 +90,7 @@ func (tp *TransportUDP) ListenOnTransports() (err error) {
 	}
 	go tp.readDataPacket()
 	go tp.readCtrlPacket()
+	tp.listening = true
 	return nil
 }
 
