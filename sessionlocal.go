@@ -28,7 +28,7 @@ import (
 )
 
 const (
-	dataReceiveChanLen = 3
+	dataReceiveChanLen = 200
 	ctrlEventChanLen   = 3
 )
 

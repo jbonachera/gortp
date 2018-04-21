@@ -25,8 +25,8 @@ import (
 )
 
 const (
-	defaultBufferSize  = 1200
-	freeListLengthRtp  = 10
+	defaultBufferSize  = 1600
+	freeListLengthRtp  = 200
 	freeListLengthRtcp = 5
 	rtpHeaderLength    = 12
 	rtcpHeaderLength   = 4
@@ -93,7 +93,7 @@ const (
 
 // nullArray is what it's names says: a long array filled with zeros.
 // used to clear (fill with zeros) arrays/slices inside a buffer by copying.
-var nullArray [1200]byte
+var nullArray [defaultBufferSize]byte
 
 type RawPacket struct {
 	inUse    int
