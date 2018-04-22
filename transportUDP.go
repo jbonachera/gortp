@@ -35,6 +35,7 @@ type TransportUDP struct {
 	toLower                     TransportWrite
 	dataConn, ctrlConn          *net.UDPConn
 	localAddrRtp, localAddrRtcp *net.UDPAddr
+	timeout                     time.Duration
 }
 
 // NewRtpTransportUDP creates a new RTP transport for UPD.
@@ -44,11 +45,12 @@ type TransportUDP struct {
 // port - The port number of the RTP data port. This must be an even port number.
 //        The following odd port number is the control (RTCP) port.
 //
-func NewTransportUDP(addr *net.IPAddr) (*TransportUDP, error) {
+func NewTransportUDP(addr *net.IPAddr, timeout time.Duration) (*TransportUDP, error) {
 	tp := new(TransportUDP)
 	tp.callUpper = tp
 	tp.localAddrRtp = &net.UDPAddr{addr.IP, 0, ""}
 	tp.localAddrRtcp = &net.UDPAddr{addr.IP, 0, ""}
+	tp.timeout = timeout
 	return tp, nil
 }
 
@@ -203,6 +205,7 @@ func (tp *TransportUDP) readDataPacket() {
 		if tp.callUpper != nil {
 			tp.callUpper.OnRecvData(rp)
 		}
+		tp.dataConn.SetDeadline(time.Now().Add(tp.timeout))
 	}
 	tp.dataConn.Close()
 	tp.transportEnd <- DataTransportRecvStopped
@@ -234,6 +237,7 @@ func (tp *TransportUDP) readCtrlPacket() {
 		if tp.callUpper != nil {
 			tp.callUpper.OnRecvCtrl(rp)
 		}
+		tp.ctrlConn.SetDeadline(time.Now().Add(tp.timeout))
 	}
 	tp.ctrlConn.Close()
 	tp.transportEnd <- CtrlTransportRecvStopped

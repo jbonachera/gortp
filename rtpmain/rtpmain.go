@@ -24,7 +24,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/danielvargas/gortp"
+	"github.com/jbonachera/gortp"
 )
 
 var localPort = 5220
@@ -215,7 +215,7 @@ func fullDuplex() {
 
 	// Create a UDP transport with "local" address and use this for a "local" RTP session
 	// The RTP session uses the transport to receive and send RTP packets to the remote peer.
-	tpLocal, _ := rtp.NewTransportUDP(local, localPort)
+	tpLocal, _ := rtp.NewTransportUDP(local, 30)
 
 	// TransportUDP implements TransportWrite and TransportRecv interfaces thus
 	// use it to initialize the Session for both interfaces.
@@ -233,7 +233,7 @@ func fullDuplex() {
 	rsLocal.SsrcStreamOutForIndex(strLocalIdx).SetPayloadType(0)
 
 	// Create the same set for a "remote" peer and use the "local" as its remote peer
-	tpRemote, _ := rtp.NewTransportUDP(remote, remotePort)
+	tpRemote, _ := rtp.NewTransportUDP(remote, 30)
 	rsRemote = rtp.NewSession(tpRemote, tpRemote)
 	rsRemote.AddRemote(&rtp.Address{local.IP, localPort, localPort + 1})
 
@@ -275,7 +275,7 @@ func fullDuplexTwoStreams() {
 
 	// Create a UDP transport with "local" address and use this for a "local" RTP session
 	// The RTP session uses the transport to receive and send RTP packets to the remote peer.
-	tpLocal, _ := rtp.NewTransportUDP(local, localPort)
+	tpLocal, _ := rtp.NewTransportUDP(local, 30)
 
 	// TransportUDP implements TransportWrite and TransportRecv interfaces thus
 	// use it to initialize the Session for both interfaces.
@@ -297,7 +297,7 @@ func fullDuplexTwoStreams() {
 	rsLocal.SsrcStreamOutForIndex(strLocalIdx).SetPayloadType(0)
 
 	// Create the same set for a "remote" peer and use the "local" as its remote peer. Remote peer has one output stream only.
-	tpRemote, _ := rtp.NewTransportUDP(remote, remotePort)
+	tpRemote, _ := rtp.NewTransportUDP(remote, 30)
 	rsRemote = rtp.NewSession(tpRemote, tpRemote)
 	rsRemote.AddRemote(&rtp.Address{local.IP, localPort, localPort + 1})
 
@@ -340,7 +340,7 @@ func simpleRtp() {
 
 	// Create a UDP transport with "local" address and use this for a "local" RTP session
 	// The RTP session uses the transport to receive and send RTP packets to the remote peer.
-	tpLocal, _ := rtp.NewTransportUDP(local, localPort)
+	tpLocal, _ := rtp.NewTransportUDP(local, 30)
 
 	// TransportUDP implements TransportWrite and TransportRecv interfaces thus
 	// use it to initialize the Session for both interfaces.
@@ -358,7 +358,7 @@ func simpleRtp() {
 	rsLocal.SsrcStreamOutForIndex(strLocalIdx).SetPayloadType(0)
 
 	// Create the same set for a "remote" peer and use the "local" as its remote peer.
-	tpRemote, _ := rtp.NewTransportUDP(remote, remotePort)
+	tpRemote, _ := rtp.NewTransportUDP(remote, 30)
 	rsRemote = rtp.NewSession(tpRemote, tpRemote)
 	rsRemote.AddRemote(&rtp.Address{local.IP, localPort, localPort + 1})
 

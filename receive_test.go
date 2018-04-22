@@ -18,10 +18,10 @@ var dataReceiver DataReceiveChan
 func initSessions() {
 	recvAddr, _ := net.ResolveIPAddr("ip", "127.0.0.1")
 	senderAddr, _ = net.ResolveIPAddr("ip", "127.0.0.2")
-
+	timeout := 30 * time.Second
 	// Create a UDP transport with "local" address and use this for a "local" RTP session
 	// Not used in these tests, used to initialize and get a Session
-	tpRecv, _ := NewTransportUDP(recvAddr, recvPort)
+	tpRecv, _ := NewTransportUDP(recvAddr, timeout)
 
 	// TransportUDP implements RtpTransportWrite and RtpTransportRecv interfaces thus
 	// set it in the RtpSession for both interfaces
@@ -40,7 +40,7 @@ func initSessions() {
 	rsRecv.SsrcStreamOutForIndex(strIdx).SetPayloadType(0)
 	rsRecv.rtcpServiceActive = true // to simulate an active RTCP service
 
-	tpSender, _ := NewTransportUDP(senderAddr, senderPort)
+	tpSender, _ := NewTransportUDP(senderAddr, timeout)
 	rsSender = NewSession(tpSender, tpSender)
 }
 

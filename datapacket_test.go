@@ -83,7 +83,7 @@ func csrcTest(rp *DataPacket, t *testing.T, csrc []uint32, run int) (result bool
 	csrcTmp := rp.CsrcList()
 	for i, v := range csrcTmp {
 		if v != csrc[i] {
-			t.Error(fmt.Sprintf("CSRC-%d check failed at %i. Expected: %x, got: %x\n", run, i, csrc[i], csrcTmp[i]))
+			t.Error(fmt.Sprintf("CSRC-%d check failed at %v. Expected: %x, got: %x\n", run, i, csrc[i], csrcTmp[i]))
 			return
 		}
 	}
@@ -96,7 +96,7 @@ func csrcTest(rp *DataPacket, t *testing.T, csrc []uint32, run int) (result bool
 	pay := rp.Payload()
 	for i, v := range payload {
 		if v != pay[i] {
-			t.Error(fmt.Sprintf("Payload-CSRC-%d check failed at %i. Expected: %x, got: %x\n", run, i, payload[i], pay[i]))
+			t.Error(fmt.Sprintf("Payload-CSRC-%d check failed at %v. Expected: %x, got: %x\n", run, i, payload[i], pay[i]))
 			return
 		}
 	}
@@ -122,7 +122,7 @@ func extTest(rp *DataPacket, t *testing.T, ext []byte, run int) (result bool) {
 	extTmp := rp.Extension()
 	for i, v := range extTmp {
 		if v != ext[i] {
-			t.Error(fmt.Sprintf("EXT-%d check failed at %i. Expected: %x, got: %x\n", run, i, ext[i], extTmp[i]))
+			t.Error(fmt.Sprintf("EXT-%d check failed at %v. Expected: %x, got: %x\n", run, i, ext[i], extTmp[i]))
 			return
 		}
 	}
@@ -135,7 +135,7 @@ func extTest(rp *DataPacket, t *testing.T, ext []byte, run int) (result bool) {
 	pay := rp.Payload()
 	for i, v := range payload {
 		if v != pay[i] {
-			t.Error(fmt.Sprintf("Payload-EXT-%d check failed at %i. Expected: %x, got: %x\n", run, i, payload[i], pay[i]))
+			t.Error(fmt.Sprintf("Payload-EXT-%d check failed at %v. Expected: %x, got: %x\n", run, i, payload[i], pay[i]))
 			return
 		}
 	}
@@ -149,12 +149,12 @@ func extTest(rp *DataPacket, t *testing.T, ext []byte, run int) (result bool) {
 func rtpPacket(t *testing.T) {
 
 	// Prepare some data to create a RP session, RTP stream and then RTP packets
-	port := 5220
+	timeout := 30 * time.Second
 	local, _ := net.ResolveIPAddr("ip", "127.0.0.1")
 
 	// Create a UDP transport with "local" address and use this for a "local" RTP session
 	// The RTP session uses the transport to receive and send RTP packets to the remote peers.
-	tpLocal, _ := NewTransportUDP(local, port)
+	tpLocal, _ := NewTransportUDP(local, timeout)
 
 	// TransportUDP implements RtpTransportWrite and RtpTransportRecv interfaces thus
 	// set it in the RtpSession for both interfaces
@@ -165,7 +165,7 @@ func rtpPacket(t *testing.T) {
 	// context. A RTP session can have several RTP stream for example to send several
 	// streams of the same media.
 	//
-	strIdx, _ := rsLocal.NewSsrcStreamOut(&Address{local.IP, port, port + 1}, 0x01020304, 0x4711)
+	strIdx, _ := rsLocal.NewSsrcStreamOut(&Address{local.IP, 0, 0}, 0x01020304, 0x4711)
 	rsLocal.SsrcStreamOutForIndex(strIdx).SetPayloadType(3)
 
 	// Create a RTP packet suitable for standard stream (index 0) with a payload length of 160 bytes
@@ -202,7 +202,7 @@ func rtpPacket(t *testing.T) {
 	}
 	for i, v := range payload {
 		if v != pay[i] {
-			t.Error(fmt.Sprintf("Payload check failed at %i. Expected: %x, got: %x\n", i, payload[i], pay[i]))
+			t.Error(fmt.Sprintf("Payload check failed at %v. Expected: %x, got: %x\n", i, payload[i], pay[i]))
 			return
 		}
 	}
@@ -254,7 +254,7 @@ func rtpPacket(t *testing.T) {
 	}
 	for i, v := range payload {
 		if v != pay[i] {
-			t.Error(fmt.Sprintf("Payload check failed at %i. Expected: %x, got: %x\n", i, payload[i], pay[i]))
+			t.Error(fmt.Sprintf("Payload check failed at %v. Expected: %x, got: %x\n", i, payload[i], pay[i]))
 			return
 		}
 	}
